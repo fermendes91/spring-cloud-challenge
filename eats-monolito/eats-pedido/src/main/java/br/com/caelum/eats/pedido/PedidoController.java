@@ -22,12 +22,8 @@ class PedidoController {
 
 	@GetMapping("/pedidos")
 	List<PedidoDto> lista() {
-		return repo.findAll()
-				.stream()
-				.map(PedidoDto::new)
-				.collect(Collectors.toList());
+		return repo.findAll().stream().map(PedidoDto::new).collect(Collectors.toList());
 	}
-
 
 	@GetMapping("/pedidos/{id}")
 	PedidoDto porId(@PathVariable("id") Long id) {
@@ -60,11 +56,11 @@ class PedidoController {
 		repo.atualizaStatus(Pedido.Status.PAGO, pedido);
 	}
 
-
 	@GetMapping("/parceiros/restaurantes/{restauranteId}/pedidos/pendentes")
 	List<PedidoDto> pendentes(@PathVariable("restauranteId") Long restauranteId) {
-		return repo.doRestauranteSemOsStatus(restauranteId, Arrays.asList(Pedido.Status.REALIZADO, Pedido.Status.ENTREGUE)).stream()
-				.map(pedido -> new PedidoDto(pedido)).collect(Collectors.toList());
+		return repo
+				.doRestauranteSemOsStatus(restauranteId, Arrays.asList(Pedido.Status.REALIZADO, Pedido.Status.ENTREGUE))
+				.stream().map(pedido -> new PedidoDto(pedido)).collect(Collectors.toList());
 	}
 
 }
