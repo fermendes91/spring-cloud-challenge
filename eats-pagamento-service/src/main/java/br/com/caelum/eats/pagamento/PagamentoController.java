@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +24,9 @@ import lombok.AllArgsConstructor;
 class PagamentoController {
 
 	private PagamentoRepository pagamentoRepo;
-	private ClienteRestDoPedido pedidoCliente;
+	
+	@Autowired
+	private MonolitoClient monolitoClient;
 
 	@GetMapping
 	ResponseEntity<List<PagamentoDto>> lista() {
@@ -52,7 +55,10 @@ class PagamentoController {
 	PagamentoDto confirma(@PathVariable("id") Long id) {
 		Pagamento pagamento = pagamentoRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
 		pagamento.setStatus(Pagamento.Status.CONFIRMADO);
-		pedidoCliente.notificaPagamentoDoPedido(pagamento.getPedidoId());
+		
+		PedidoMudancaDeStatusRequest pedidoMudanca = new PedidoMudancaDeStatusRequest("pago".toUpperCase());
+		
+		monolitoClient.atualizaStatusPedido(pagamento.getPedidoId(), pedidoMudanca);
 		pagamentoRepo.save(pagamento);
 		return new PagamentoDto(pagamento);
 	}
