@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+
 import lombok.AllArgsConstructor;
 
 @RestController
@@ -70,6 +72,7 @@ class PagamentoController {
 	}
 
 	@PutMapping("/{id}")
+	@HystrixCommand(fallbackMethod = "confirmaFallback")
 	PagamentoDto confirma(@PathVariable("id") Long id) {
 		LOG.info("Confirmação de pagamento de id: {} será realizada", id);
 		Pagamento pagamento = pagamentoRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
@@ -90,6 +93,16 @@ class PagamentoController {
 		pagamento.setStatus(Pagamento.Status.CANCELADO);
 		pagamentoRepo.save(pagamento);
 		LOG.info("Requisição para cancelamento de pagamento de id: {} realizada com sucesso", id);
+		return new PagamentoDto(pagamento);
+	}
+	
+	PagamentoDto confirmaFallback(@PathVariable("id") Long id) {
+		LOG.info("Aconteceu uma falha ao atualizar o status do pedido");
+		Pagamento pagamento = pagamentoRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
+		pagamento.setStatus(Pagamento.Status.PROCESSANDO);
+				
+		pagamentoRepo.save(pagamento);
+		LOG.info("Alteração do pedido para processando realizado com sucesso", pagamento.getPedidoId());
 		return new PagamentoDto(pagamento);
 	}
 
