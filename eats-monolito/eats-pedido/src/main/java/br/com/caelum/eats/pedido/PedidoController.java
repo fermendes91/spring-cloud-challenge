@@ -54,12 +54,23 @@ class PedidoController {
 
 	@PutMapping("/pedidos/{pedidoId}/status")
 	PedidoDto atualizaStatus(@PathVariable Long pedidoId, @RequestBody Pedido pedidoParaAtualizar) {
-		LOG.info("Request para a atualização do status do pedido, {} será executada", pedidoId);
-		Pedido pedido = repo.porIdComItens(pedidoId).orElseThrow(ResourceNotFoundException::new);
-		pedido.setStatus(pedidoParaAtualizar.getStatus());
-		repo.atualizaStatus(pedido.getStatus(), pedido);
-		LOG.info("Request para a atualização do status do pedido, {} realizada com sucesso", pedidoId);
-		return new PedidoDto(pedido);
+		if (LocalDateTime.now().getSecond() % 2 == 0) {
+			LOG.info("Request para a atualização do status do pedido, {} será executada", pedidoId);
+			Pedido pedido = repo.porIdComItens(pedidoId).orElseThrow(ResourceNotFoundException::new);
+			pedido.setStatus(pedidoParaAtualizar.getStatus());
+			repo.atualizaStatus(pedido.getStatus(), pedido);
+			LOG.info("Request para a atualização do status do pedido, {} realizada com sucesso", pedidoId);
+			return new PedidoDto(pedido);
+		}
+		
+		try {
+			LOG.error("Falha ao gerar pedido ", pedidoId);
+			Thread.sleep(30000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 
 	@PutMapping("/pedidos/{id}/pago")
