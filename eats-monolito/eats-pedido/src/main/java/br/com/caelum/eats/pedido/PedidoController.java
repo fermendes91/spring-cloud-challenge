@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+
 import lombok.AllArgsConstructor;
 
 @RestController
@@ -53,8 +55,9 @@ class PedidoController {
 	}
 
 	@PutMapping("/pedidos/{pedidoId}/status")
-	PedidoDto atualizaStatus(@PathVariable Long pedidoId, @RequestBody Pedido pedidoParaAtualizar) {
-		if (LocalDateTime.now().getSecond() % 2 == 0) {
+	@HystrixCommand
+	PedidoDto atualizaStatus(@PathVariable Long pedidoId, @RequestBody Pedido pedidoParaAtualizar) throws InterruptedException {
+		if (LocalDateTime.now().getMinute() % 2 == 0) {
 			LOG.info("Request para a atualização do status do pedido, {} será executada", pedidoId);
 			Pedido pedido = repo.porIdComItens(pedidoId).orElseThrow(ResourceNotFoundException::new);
 			pedido.setStatus(pedidoParaAtualizar.getStatus());
@@ -63,14 +66,8 @@ class PedidoController {
 			return new PedidoDto(pedido);
 		}
 		
-		try {
-			LOG.error("Falha ao gerar pedido ", pedidoId);
-			Thread.sleep(30000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		return null;
+		Thread.sleep(30000);
+		throw new RuntimeException("Não foi possível atualizar o pedido");
 	}
 
 	@PutMapping("/pedidos/{id}/pago")

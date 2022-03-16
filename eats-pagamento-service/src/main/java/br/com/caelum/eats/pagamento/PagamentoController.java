@@ -61,6 +61,7 @@ class PagamentoController {
 	}
 
 	@PostMapping
+	@HystrixCommand(threadPoolKey = "criaThreadPool")
 	ResponseEntity<PagamentoDto> cria(@RequestBody Pagamento pagamento, UriComponentsBuilder uriBuilder) {
 		LOG.info("Criação de pagamento do pedido: {} será realizada", pagamento.getPedidoId());
 		pagamento.setStatus(Pagamento.Status.CRIADO);
@@ -72,8 +73,8 @@ class PagamentoController {
 	}
 
 	@PutMapping("/{id}")
-	@HystrixCommand(fallbackMethod = "confirmaFallback")
-	PagamentoDto confirma(@PathVariable("id") Long id) {
+	@HystrixCommand(fallbackMethod = "confirmaFallback", threadPoolKey = "confirmaThreadPool")
+	PagamentoDto confirma(@PathVariable("id") Long id) throws InterruptedException {
 		LOG.info("Confirmação de pagamento de id: {} será realizada", id);
 		Pagamento pagamento = pagamentoRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
 		pagamento.setStatus(Pagamento.Status.CONFIRMADO);
