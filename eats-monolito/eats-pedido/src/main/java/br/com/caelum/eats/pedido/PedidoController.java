@@ -57,17 +57,12 @@ class PedidoController {
 	@PutMapping("/pedidos/{pedidoId}/status")
 	@HystrixCommand
 	PedidoDto atualizaStatus(@PathVariable Long pedidoId, @RequestBody Pedido pedidoParaAtualizar) throws InterruptedException {
-		if (LocalDateTime.now().getMinute() % 2 == 0) {
-			LOG.info("Request para a atualização do status do pedido, {} será executada", pedidoId);
-			Pedido pedido = repo.porIdComItens(pedidoId).orElseThrow(ResourceNotFoundException::new);
-			pedido.setStatus(pedidoParaAtualizar.getStatus());
-			repo.atualizaStatus(pedido.getStatus(), pedido);
-			LOG.info("Request para a atualização do status do pedido, {} realizada com sucesso", pedidoId);
-			return new PedidoDto(pedido);
-		}
-		
-		Thread.sleep(30000);
-		throw new RuntimeException("Não foi possível atualizar o pedido");
+		LOG.info("Request para a atualização do status do pedido, {} será executada", pedidoId);
+		Pedido pedido = repo.porIdComItens(pedidoId).orElseThrow(ResourceNotFoundException::new);
+		pedido.setStatus(pedidoParaAtualizar.getStatus());
+		repo.atualizaStatus(pedido.getStatus(), pedido);
+		LOG.info("Request para a atualização do status do pedido, {} realizada com sucesso", pedidoId);
+		return new PedidoDto(pedido);
 	}
 
 	@PutMapping("/pedidos/{id}/pago")
