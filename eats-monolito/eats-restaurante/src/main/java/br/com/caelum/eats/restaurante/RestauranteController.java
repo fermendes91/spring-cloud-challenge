@@ -3,6 +3,7 @@ package br.com.caelum.eats.restaurante;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,6 +20,9 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 class RestauranteController {
 
+	@Autowired
+	private DistanciaClient distanciaClient;
+	
 	private RestauranteRepository restauranteRepo;
 	private CardapioRepository cardapioRepo;
 
@@ -43,6 +47,10 @@ class RestauranteController {
 	Restaurante adiciona(@RequestBody Restaurante restaurante) {
 		restaurante.setAprovado(false);
 		Restaurante restauranteSalvo = restauranteRepo.save(restaurante);
+		
+		distanciaClient.adiciona(RestauranteDistanciaDTO.mapFromRestaurente(restauranteSalvo));
+		
+		// Invocar Distancia Client.
 		Cardapio cardapio = new Cardapio();
 		cardapio.setRestaurante(restauranteSalvo);
 		cardapioRepo.save(cardapio);
@@ -53,7 +61,11 @@ class RestauranteController {
   public RestauranteDto atualiza(@PathVariable Long id, @RequestBody RestauranteDto restaurante) {
     Restaurante doBD = restauranteRepo.getOne(id);
     restaurante.populaRestaurante(doBD);
-    return new RestauranteDto(restauranteRepo.save(doBD));
+    
+    RestauranteDto restaurenteAtualizado = new RestauranteDto(restauranteRepo.save(doBD));
+    
+    distanciaClient.atualiza(restaurenteAtualizado.getId(), RestauranteDistanciaDTO.mapFromRestaurente(restaurenteAtualizado));
+    return restaurenteAtualizado;
   }
 
 
