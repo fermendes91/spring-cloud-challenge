@@ -36,10 +36,3 @@ public class ClienteRestDoPedido {
     }
 }
 
-@Getter
-@AllArgsConstructor
-class PedidoMudancaDeStatusRequest {
-    private String status;
-}
-
-
