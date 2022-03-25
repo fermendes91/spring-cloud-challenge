@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+
 import lombok.AllArgsConstructor;
 
 @RestController
@@ -44,6 +46,7 @@ class RestauranteController {
 	}
 
 	@PostMapping("/parceiros/restaurantes")
+	@HystrixCommand(threadPoolKey = "adicionaThreadPool")
 	Restaurante adiciona(@RequestBody Restaurante restaurante) {
 		restaurante.setAprovado(false);
 		Restaurante restauranteSalvo = restauranteRepo.save(restaurante);
