@@ -39,5 +39,5 @@ class RestaurantesController {
         log.info("Atualiza restaurante: " + restaurante);
         return repo.save(restaurante);
     }
-
+    
 }
